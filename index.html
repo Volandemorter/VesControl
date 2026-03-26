@@ -8,7 +8,7 @@
     * { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
     body { background: #f0f2f5; margin: 0; padding: 16px 12px 40px; }
     .container { max-width: 800px; margin: 0 auto; }
-    .card { background: white; border-radius: 24px; padding: 16px 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: all 0.2s; }
+    .card { background: white; border-radius: 24px; padding: 16px 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     h1, h2, h3 { margin-top: 0; margin-bottom: 12px; font-weight: 600; color: #1e293b; }
     h1 { font-size: 1.7rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
     h2 { font-size: 1.3rem; border-left: 4px solid #f97316; padding-left: 12px; }
@@ -57,6 +57,8 @@
     .user-item { border-bottom: 1px solid #e2e8f0; padding: 12px 0; }
     .goal-item { background: #fef9e6; border-radius: 16px; padding: 8px 12px; margin: 8px 0; }
     .btn-goal-complete { background: #10b981; color: white; }
+    .expand-btn { margin-left: 10px; }
+    .collapsible-content { display: none; margin-top: 12px; padding-top: 8px; border-top: 1px dashed #e2e8f0; }
     @media (max-width: 550px) { body { padding: 12px 8px; } .btn { padding: 8px 12px; font-size: 0.8rem; } }
   </style>
   <script type="importmap">
@@ -75,7 +77,7 @@
     <h2>🔐 Вход / Регистрация</h2>
     <input type="email" id="emailInput" placeholder="Email" style="margin-bottom: 10px;">
     <input type="password" id="passwordInput" placeholder="Пароль (мин. 6 символов)" style="margin-bottom: 10px;">
-    <input type="text" id="displayNameInput" placeholder="Ваше имя (необязательно)" style="margin-bottom: 10px;">
+    <input type="text" id="displayNameInput" placeholder="Имя (обязательно)" style="margin-bottom: 10px;" required>
     <div class="btn-grid" style="justify-content: center;">
       <button id="loginBtn" class="btn btn-primary">Войти</button>
       <button id="registerBtn" class="btn">Зарегистрироваться</button>
@@ -101,7 +103,6 @@
         <input type="date" id="selectedDate" style="width: auto; max-width: 160px;">
       </div>
     </div>
-    <!-- Блок персональных целей пользователя -->
     <div class="card" id="userGoalsBlock">
       <h2>🎯 Мои активные цели</h2>
       <div id="userGoalsList"></div>
@@ -204,7 +205,6 @@
   const penaltyMultiplierSpan = document.getElementById('penaltyMultiplierDisplay');
   const userGoalsListDiv = document.getElementById('userGoalsList');
 
-  // Базовые списки (без промежуточной цели)
   const REWARDS = [
     { label: "🏋️ Тренировка 10-20мин", baseSum: 50 },
     { label: "🏋️‍♀️ Тренировка 20-40мин", baseSum: 100 },
@@ -232,7 +232,6 @@
     { label: "🔥 Убрала 1% жира", baseSum: 200 },
     { label: "💪 Сохранение мышц (неделя)", baseSum: 150 },
     { label: "⭐ Неделя без срывов", baseSum: 300 }
-    // "Промежуточная цель" удалена – теперь она управляется через персональные цели
   ];
 
   let currentUser = null;
@@ -263,7 +262,6 @@
     });
   }
 
-  // Добавление операции (с учётом множителя)
   async function addOperation(date, type, baseSum, description) {
     if (!currentUser) return;
     const multiplier = type === 'reward' ? multipliers.reward : multipliers.penalty;
@@ -312,7 +310,6 @@
     await set(getUserOpsRef(), null);
   }
 
-  // Выполнение цели пользователем
   async function completeGoal(goalId, description, sum) {
     if (!currentUser) return;
     if (confirm(`Выполнить цель "${description}" и получить +${sum}₽?`)) {
@@ -321,10 +318,8 @@
     }
   }
 
-  // Загрузка целей пользователя
   function loadUserGoals() {
-    const goalsRef = getUserGoalsRef();
-    onValue(goalsRef, (snap) => {
+    onValue(getUserGoalsRef(), (snap) => {
       userGoals = snap.val() || {};
       renderUserGoals();
     });
@@ -348,7 +343,6 @@
       `;
     }
     userGoalsListDiv.innerHTML = html;
-    // Вешаем обработчики
     document.querySelectorAll('[data-goal-id]').forEach(btn => {
       btn.addEventListener('click', () => {
         const goalId = btn.getAttribute('data-goal-id');
@@ -359,7 +353,6 @@
     });
   }
 
-  // Статистика
   function getBalanceTotal() { return operations.reduce((acc, op) => acc + op.sum, 0); }
   function getSumByPeriod(dateStart, dateEnd) { return operations.reduce((acc, op) => (op.date >= dateStart && op.date <= dateEnd) ? acc + op.sum : acc, 0); }
   function getWeekRange() {
@@ -377,7 +370,6 @@
     return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
   }
 
-  // Отрисовка
   function renderAll() {
     totalBalanceSpan.innerText = getBalanceTotal().toLocaleString() + ' ₽';
     const todaySum = getSumByPeriod(getTodayStr(), getTodayStr());
@@ -392,7 +384,7 @@
 
   function renderHistory() {
     if (!operations.length) { historyListDiv.innerHTML = '<p style="text-align: center; color: gray;">Нет операций</p>'; return; }
-    let html = '能<table><thead><tr><th>Дата</th><th>Кто</th><th>Описание</th><th>Сумма</th><th></th></tr></thead><tbody>';
+    let html = '<table><thead><tr><th>Дата</th><th>Кто</th><th>Описание</th><th>Сумма</th><th></th></tr></thead><tbody>';
     operations.forEach(op => {
       const author = op.authorName || (op.authorEmail || '?');
       html += `<tr>
@@ -482,7 +474,7 @@
     loadUserGoals();
   }
 
-  // --- Admin functions ---
+  // Admin functions with collapsible users
   async function loadAdminUsers() {
     try {
       const usersSnapshot = await get(ref(db, 'users'));
@@ -497,49 +489,67 @@
         const displayName = profile.displayName || '';
         const email = profile.email || uid;
         const multipliersData = userData.settings?.multipliers || { reward: 1.0, penalty: 1.0 };
-        const goalsSnapshot = await get(ref(db, `users/${uid}/customGoals`));
-        const goals = goalsSnapshot.val() || {};
         
         html += `
           <div class="user-item">
             <div class="flex-between">
               <strong>${escapeHtml(displayName || email)}</strong>
               <span style="font-size:0.7rem;">UID: ${uid.slice(0,8)}...</span>
+              <button class="btn-sm expand-btn" data-uid="${uid}">Развернуть</button>
             </div>
-            <div class="inline-input" style="margin: 8px 0;">
-              <input type="text" id="name_${uid}" placeholder="Имя" value="${escapeHtml(displayName)}" style="flex:1">
-              <button class="btn-sm" onclick="window.updateUserName('${uid}', this.previousElementSibling.value)">Сохранить имя</button>
+            <div id="collapsible_${uid}" class="collapsible-content">
+              <div class="inline-input" style="margin: 8px 0;">
+                <input type="text" id="name_${uid}" placeholder="Имя" value="${escapeHtml(displayName)}" style="flex:1">
+                <button class="btn-sm" onclick="window.updateUserName('${uid}', this.previousElementSibling.value)">Сохранить имя</button>
+              </div>
+              <div class="inline-input" style="gap: 8px;">
+                <label>Множитель поощрений:</label>
+                <input type="number" id="rewardMul_${uid}" step="0.1" value="${multipliersData.reward}" style="width: 80px;">
+                <label>Штрафов:</label>
+                <input type="number" id="penaltyMul_${uid}" step="0.1" value="${multipliersData.penalty}" style="width: 80px;">
+                <button class="btn-sm" onclick="window.updateMultipliers('${uid}', parseFloat(document.getElementById('rewardMul_${uid}').value), parseFloat(document.getElementById('penaltyMul_${uid}').value))">Обновить</button>
+              </div>
+              <div class="flex-between" style="margin-top: 8px;">
+                <span><strong>🎯 Персональные цели</strong></span>
+                <button class="btn-sm" onclick="window.showAddGoalForm('${uid}', '${escapeHtml(displayName || email)}')">➕ Добавить цель</button>
+              </div>
+              <div id="goals_${uid}">
+                ${await renderGoalsList(uid)}
+              </div>
+              <div style="margin-top: 8px;">
+                <button class="btn-sm" onclick="window.viewUserOperations('${uid}', '${escapeHtml(displayName || email)}')">📋 Показать операции</button>
+                <button class="btn-sm" style="background:#fee2e2;" onclick="window.deleteUserData('${uid}')">🗑️ Удалить данные пользователя</button>
+              </div>
+              <div id="ops_${uid}" style="margin-top: 8px; font-size: 0.8rem;"></div>
             </div>
-            <div class="inline-input" style="gap: 8px;">
-              <label>Множитель поощрений:</label>
-              <input type="number" id="rewardMul_${uid}" step="0.1" value="${multipliersData.reward}" style="width: 80px;">
-              <label>Штрафов:</label>
-              <input type="number" id="penaltyMul_${uid}" step="0.1" value="${multipliersData.penalty}" style="width: 80px;">
-              <button class="btn-sm" onclick="window.updateMultipliers('${uid}', parseFloat(document.getElementById('rewardMul_${uid}').value), parseFloat(document.getElementById('penaltyMul_${uid}').value))">Обновить</button>
-            </div>
-            <div class="flex-between" style="margin-top: 8px;">
-              <span><strong>🎯 Персональные цели</strong></span>
-              <button class="btn-sm" onclick="window.showAddGoalForm('${uid}', '${escapeHtml(displayName || email)}')">➕ Добавить цель</button>
-            </div>
-            <div id="goals_${uid}">
-              ${renderGoalsList(uid, goals)}
-            </div>
-            <div style="margin-top: 8px;">
-              <button class="btn-sm" onclick="window.viewUserOperations('${uid}', '${escapeHtml(displayName || email)}')">📋 Показать операции</button>
-              <button class="btn-sm" style="background:#fee2e2;" onclick="window.deleteUserData('${uid}')">🗑️ Удалить данные пользователя</button>
-            </div>
-            <div id="ops_${uid}" style="margin-top: 8px; font-size: 0.8rem;"></div>
           </div>
         `;
       }
       adminUsersListDiv.innerHTML = html;
+      
+      // Добавляем обработчики для кнопок разворачивания
+      document.querySelectorAll('.expand-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const uid = btn.getAttribute('data-uid');
+          const content = document.getElementById(`collapsible_${uid}`);
+          if (content.style.display === 'none' || !content.style.display) {
+            content.style.display = 'block';
+            btn.textContent = 'Свернуть';
+          } else {
+            content.style.display = 'none';
+            btn.textContent = 'Развернуть';
+          }
+        });
+      });
     } catch (error) {
       console.error('Ошибка загрузки пользователей:', error);
       adminUsersListDiv.innerHTML = '<p>Ошибка загрузки. Проверьте права доступа.</p>';
     }
   }
 
-  function renderGoalsList(uid, goals) {
+  async function renderGoalsList(uid) {
+    const goalsSnapshot = await get(ref(db, `users/${uid}/customGoals`));
+    const goals = goalsSnapshot.val() || {};
     if (!goals || Object.keys(goals).length === 0) return '<em>Нет целей</em>';
     let html = '';
     for (const [goalId, goal] of Object.entries(goals)) {
@@ -637,18 +647,18 @@
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
     const displayName = document.getElementById('displayNameInput').value.trim();
+    if (!displayName) {
+      showAuthMessage('Имя обязательно для регистрации');
+      return;
+    }
     if (password.length < 6) {
       showAuthMessage('Пароль должен быть не менее 6 символов');
       return;
     }
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      if (displayName) {
-        await updateProfile(userCred.user, { displayName });
-        await set(ref(db, `users/${userCred.user.uid}/profile`), { displayName, email });
-      } else {
-        await set(ref(db, `users/${userCred.user.uid}/profile`), { email });
-      }
+      await updateProfile(userCred.user, { displayName });
+      await set(ref(db, `users/${userCred.user.uid}/profile`), { displayName, email });
       showAuthMessage('Регистрация успешна!', false);
     } catch (err) {
       showAuthMessage(err.message);
