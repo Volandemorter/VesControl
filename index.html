@@ -8,16 +8,36 @@
     * { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
     body { background: #f0f2f5; margin: 0; padding: 16px 12px 40px; }
     .container { max-width: 800px; margin: 0 auto; }
-    .card { background: white; border-radius: 24px; padding: 16px 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .card { background: white; border-radius: 24px; padding: 16px 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: all 0.2s; }
     h1, h2, h3 { margin-top: 0; margin-bottom: 12px; font-weight: 600; color: #1e293b; }
     h1 { font-size: 1.7rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
     h2 { font-size: 1.3rem; border-left: 4px solid #f97316; padding-left: 12px; }
     .balance { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 28px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
     .btn-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-    .btn { background: #f1f5f9; border: none; padding: 10px 16px; border-radius: 60px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: transform 0.08s linear; user-select: none; }
-    .btn:active { transform: scale(0.96); }
-    .btn-primary { background: #f97316; color: white; }
-    .btn-primary:active { background: #ea580c; }
+    .btn {
+      background: #f1f5f9;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 60px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.08s linear, background 0.1s ease;
+      color: #0f172a;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .btn:active {
+      transform: scale(0.96);
+      background: #e2e8f0;
+    }
+    .btn-primary {
+      background: #f97316;
+      color: white;
+    }
+    .btn-primary:active {
+      background: #ea580c;
+    }
     .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
     .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -36,6 +56,7 @@
     .close-modal { float: right; font-size: 1.5rem; cursor: pointer; }
     .user-item { border-bottom: 1px solid #e2e8f0; padding: 12px 0; }
     .goal-item { background: #fef9e6; border-radius: 16px; padding: 8px 12px; margin: 8px 0; }
+    .btn-goal-complete { background: #10b981; color: white; }
     @media (max-width: 550px) { body { padding: 12px 8px; } .btn { padding: 8px 12px; font-size: 0.8rem; } }
   </style>
   <script type="importmap">
@@ -79,6 +100,11 @@
         <h3>📅 Дата операции</h3>
         <input type="date" id="selectedDate" style="width: auto; max-width: 160px;">
       </div>
+    </div>
+    <!-- Блок персональных целей пользователя -->
+    <div class="card" id="userGoalsBlock">
+      <h2>🎯 Мои активные цели</h2>
+      <div id="userGoalsList"></div>
     </div>
     <div class="card">
       <h2>🏆 Поощрения (x<span id="rewardMultiplierDisplay">1.00</span>)</h2>
@@ -176,7 +202,9 @@
   const adminUsersListDiv = document.getElementById('adminUsersList');
   const rewardMultiplierSpan = document.getElementById('rewardMultiplierDisplay');
   const penaltyMultiplierSpan = document.getElementById('penaltyMultiplierDisplay');
+  const userGoalsListDiv = document.getElementById('userGoalsList');
 
+  // Базовые списки (без промежуточной цели)
   const REWARDS = [
     { label: "🏋️ Тренировка 10-20мин", baseSum: 50 },
     { label: "🏋️‍♀️ Тренировка 20-40мин", baseSum: 100 },
@@ -203,8 +231,8 @@
     { label: "🏅 Похудела на 1 кг", baseSum: 1000 },
     { label: "🔥 Убрала 1% жира", baseSum: 200 },
     { label: "💪 Сохранение мышц (неделя)", baseSum: 150 },
-    { label: "⭐ Неделя без срывов", baseSum: 300 },
-    { label: "🎯 Промежуточная цель (бонус)", baseSum: 1000 }
+    { label: "⭐ Неделя без срывов", baseSum: 300 }
+    // "Промежуточная цель" удалена – теперь она управляется через персональные цели
   ];
 
   let currentUser = null;
@@ -212,6 +240,7 @@
   let operations = [];
   let measurements = [];
   let multipliers = { reward: 1.0, penalty: 1.0 };
+  let userGoals = {};
 
   function getTodayStr() { return new Date().toISOString().slice(0,10); }
   function formatMoney(sum) {
@@ -223,6 +252,7 @@
   function getUserOpsRef() { return ref(db, `users/${currentUser.uid}/operations`); }
   function getUserMeasRef() { return ref(db, `users/${currentUser.uid}/measurements`); }
   function getUserSettingsRef() { return ref(db, `users/${currentUser.uid}/settings/multipliers`); }
+  function getUserGoalsRef() { return ref(db, `users/${currentUser.uid}/customGoals`); }
 
   function loadMultipliers() {
     onValue(getUserSettingsRef(), (snap) => {
@@ -233,6 +263,7 @@
     });
   }
 
+  // Добавление операции (с учётом множителя)
   async function addOperation(date, type, baseSum, description) {
     if (!currentUser) return;
     const multiplier = type === 'reward' ? multipliers.reward : multipliers.penalty;
@@ -281,6 +312,54 @@
     await set(getUserOpsRef(), null);
   }
 
+  // Выполнение цели пользователем
+  async function completeGoal(goalId, description, sum) {
+    if (!currentUser) return;
+    if (confirm(`Выполнить цель "${description}" и получить +${sum}₽?`)) {
+      await addOperation(getTodayStr(), 'reward', sum, `🏆 Выполнена цель: ${description}`);
+      await remove(ref(db, `users/${currentUser.uid}/customGoals/${goalId}`));
+    }
+  }
+
+  // Загрузка целей пользователя
+  function loadUserGoals() {
+    const goalsRef = getUserGoalsRef();
+    onValue(goalsRef, (snap) => {
+      userGoals = snap.val() || {};
+      renderUserGoals();
+    });
+  }
+
+  function renderUserGoals() {
+    if (!userGoals || Object.keys(userGoals).length === 0) {
+      userGoalsListDiv.innerHTML = '<p style="color: gray;">Нет активных целей. Администратор может добавить персональную цель.</p>';
+      return;
+    }
+    let html = '';
+    for (const [goalId, goal] of Object.entries(userGoals)) {
+      html += `
+        <div class="goal-item flex-between">
+          <div>
+            <strong>${escapeHtml(goal.description)}</strong><br>
+            <span style="font-size:0.7rem;">Бонус: +${goal.sum} ₽</span>
+          </div>
+          <button class="btn-sm btn-goal-complete" data-goal-id="${goalId}" data-desc="${escapeHtml(goal.description)}" data-sum="${goal.sum}">✅ Выполнить</button>
+        </div>
+      `;
+    }
+    userGoalsListDiv.innerHTML = html;
+    // Вешаем обработчики
+    document.querySelectorAll('[data-goal-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const goalId = btn.getAttribute('data-goal-id');
+        const desc = btn.getAttribute('data-desc');
+        const sum = parseFloat(btn.getAttribute('data-sum'));
+        completeGoal(goalId, desc, sum);
+      });
+    });
+  }
+
+  // Статистика
   function getBalanceTotal() { return operations.reduce((acc, op) => acc + op.sum, 0); }
   function getSumByPeriod(dateStart, dateEnd) { return operations.reduce((acc, op) => (op.date >= dateStart && op.date <= dateEnd) ? acc + op.sum : acc, 0); }
   function getWeekRange() {
@@ -298,6 +377,7 @@
     return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
   }
 
+  // Отрисовка
   function renderAll() {
     totalBalanceSpan.innerText = getBalanceTotal().toLocaleString() + ' ₽';
     const todaySum = getSumByPeriod(getTodayStr(), getTodayStr());
@@ -312,7 +392,7 @@
 
   function renderHistory() {
     if (!operations.length) { historyListDiv.innerHTML = '<p style="text-align: center; color: gray;">Нет операций</p>'; return; }
-    let html = '</tr><thead>汽<th>Дата</th><th>Кто</th><th>Описание</th><th>Сумма</th><th></th></thead><tbody>';
+    let html = '能<table><thead><tr><th>Дата</th><th>Кто</th><th>Описание</th><th>Сумма</th><th></th></tr></thead><tbody>';
     operations.forEach(op => {
       const author = op.authorName || (op.authorEmail || '?');
       html += `<tr>
@@ -375,8 +455,13 @@
     if (!btn || btn.disabled) return;
     btn.disabled = true;
     btn.style.transform = "scale(0.96)";
+    btn.style.backgroundColor = "#cbd5e1";
     if (navigator.vibrate) navigator.vibrate(20);
-    setTimeout(() => { btn.disabled = false; btn.style.transform = ""; }, 200);
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.style.transform = "";
+      btn.style.backgroundColor = "";
+    }, 200);
     callback();
   }
 
@@ -394,6 +479,7 @@
       renderMeasurements();
     });
     loadMultipliers();
+    loadUserGoals();
   }
 
   // --- Admin functions ---
@@ -409,9 +495,8 @@
       for (const [uid, userData] of Object.entries(users)) {
         const profile = userData.profile || {};
         const displayName = profile.displayName || '';
-        const email = profile.email || uid; // если email не сохранён, показываем uid
+        const email = profile.email || uid;
         const multipliersData = userData.settings?.multipliers || { reward: 1.0, penalty: 1.0 };
-        // Получаем персональные цели
         const goalsSnapshot = await get(ref(db, `users/${uid}/customGoals`));
         const goals = goalsSnapshot.val() || {};
         
@@ -513,7 +598,6 @@
   };
   window.awardGoal = async (uid, goalId, description, sum) => {
     if (confirm(`Начислить ${sum}₽ за выполнение цели "${description}"?`)) {
-      // Добавляем операцию пользователю
       const userOperationsRef = ref(db, `users/${uid}/operations`);
       const newOp = {
         date: getTodayStr(),
@@ -526,7 +610,6 @@
         awardedBy: currentUser.uid
       };
       await push(userOperationsRef, newOp);
-      // Удаляем цель или помечаем выполненной (удаляем для простоты)
       await remove(ref(db, `users/${uid}/customGoals/${goalId}`));
       loadAdminUsers();
     }
