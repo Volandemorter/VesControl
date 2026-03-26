@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Мотивация: поощрения и штрафы</title>
   <style>
+    /* стили остаются те же, что и в предыдущей версии, опущены для краткости */
     * { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
     body { background: #f0f2f5; margin: 0; padding: 16px 12px 40px; }
     .container { max-width: 800px; margin: 0 auto; }
@@ -126,7 +127,6 @@
   </div>
 </div>
 
-<!-- Админ-панель (модальное окно) -->
 <div id="adminModal" class="modal">
   <div class="modal-content">
     <span class="close-modal">&times;</span>
@@ -177,7 +177,6 @@
   const rewardMultiplierSpan = document.getElementById('rewardMultiplierDisplay');
   const penaltyMultiplierSpan = document.getElementById('penaltyMultiplierDisplay');
 
-  // Базовые списки (суммы без множителей)
   const REWARDS = [
     { label: "🏋️ Тренировка 10-20мин", baseSum: 50 },
     { label: "🏋️‍♀️ Тренировка 20-40мин", baseSum: 100 },
@@ -214,7 +213,6 @@
   let measurements = [];
   let multipliers = { reward: 1.0, penalty: 1.0 };
 
-  // Helper functions
   function getTodayStr() { return new Date().toISOString().slice(0,10); }
   function formatMoney(sum) {
     const color = sum >=0 ? 'positive' : 'negative';
@@ -222,25 +220,19 @@
   }
   function escapeHtml(str) { return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
 
-  // DB references
   function getUserOpsRef() { return ref(db, `users/${currentUser.uid}/operations`); }
   function getUserMeasRef() { return ref(db, `users/${currentUser.uid}/measurements`); }
   function getUserSettingsRef() { return ref(db, `users/${currentUser.uid}/settings/multipliers`); }
-  function getUserProfileRef() { return ref(db, `users/${currentUser.uid}/profile`); }
 
-  // Load user multipliers
   function loadMultipliers() {
-    const settingsRef = getUserSettingsRef();
-    onValue(settingsRef, (snap) => {
-      const data = snap.val();
-      multipliers = { reward: 1.0, penalty: 1.0, ...data };
+    onValue(getUserSettingsRef(), (snap) => {
+      multipliers = { reward: 1.0, penalty: 1.0, ...snap.val() };
       rewardMultiplierSpan.innerText = multipliers.reward.toFixed(2);
       penaltyMultiplierSpan.innerText = multipliers.penalty.toFixed(2);
-      renderQuickButtons(); // обновляем кнопки с новыми суммами
+      renderQuickButtons();
     });
   }
 
-  // Add operation with multiplier
   async function addOperation(date, type, baseSum, description) {
     if (!currentUser) return;
     const multiplier = type === 'reward' ? multipliers.reward : multipliers.penalty;
@@ -258,53 +250,39 @@
   }
 
   async function deleteOperation(id) {
-    if (!currentUser) return;
     await remove(ref(db, `users/${currentUser.uid}/operations/${id}`));
   }
 
   async function addMeasurement(date, weight, fat) {
-    if (!currentUser) return;
     date = date || getTodayStr();
     const sorted = [...measurements].sort((a,b) => new Date(a.date) - new Date(b.date));
     const last = sorted[sorted.length-1];
-    const measRef = getUserMeasRef();
     const newMeas = { date, weight: parseFloat(weight), fat: parseFloat(fat), timestamp: Date.now() };
-    await push(measRef, newMeas);
+    await push(getUserMeasRef(), newMeas);
     if (last) {
       const weightDiff = last.weight - newMeas.weight;
       const fatDiff = last.fat - newMeas.fat;
       if (weightDiff >= 1.0) {
         const kgLost = Math.floor(weightDiff);
-        for(let i=0; i<kgLost; i++) {
-          await addOperation(date, 'reward', 1000, `🎉 Автобонус: -1 кг (${last.weight} → ${newMeas.weight})`);
-        }
+        for(let i=0; i<kgLost; i++) await addOperation(date, 'reward', 1000, `🎉 Автобонус: -1 кг (${last.weight} → ${newMeas.weight})`);
       }
       if (fatDiff >= 1.0) {
         const fatLost = Math.floor(fatDiff);
-        for(let i=0; i<fatLost; i++) {
-          await addOperation(date, 'reward', 200, `🔥 Автобонус: -1% жира (${last.fat}% → ${newMeas.fat}%)`);
-        }
+        for(let i=0; i<fatLost; i++) await addOperation(date, 'reward', 200, `🔥 Автобонус: -1% жира (${last.fat}% → ${newMeas.fat}%)`);
       }
     }
   }
 
   async function deleteMeasurement(id) {
-    if (!currentUser) return;
     await remove(ref(db, `users/${currentUser.uid}/measurements/${id}`));
   }
 
   async function clearAllOperations() {
-    if (!currentUser) return;
     await set(getUserOpsRef(), null);
   }
 
-  // Calculations
-  function getBalanceTotal() {
-    return operations.reduce((acc, op) => acc + op.sum, 0);
-  }
-  function getSumByPeriod(dateStart, dateEnd) {
-    return operations.reduce((acc, op) => (op.date >= dateStart && op.date <= dateEnd) ? acc + op.sum : acc, 0);
-  }
+  function getBalanceTotal() { return operations.reduce((acc, op) => acc + op.sum, 0); }
+  function getSumByPeriod(dateStart, dateEnd) { return operations.reduce((acc, op) => (op.date >= dateStart && op.date <= dateEnd) ? acc + op.sum : acc, 0); }
   function getWeekRange() {
     const today = new Date();
     const start = new Date(today);
@@ -320,9 +298,7 @@
     return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
   }
 
-  // Render functions
   function renderAll() {
-    if (!currentUser) return;
     totalBalanceSpan.innerText = getBalanceTotal().toLocaleString() + ' ₽';
     const todaySum = getSumByPeriod(getTodayStr(), getTodayStr());
     const week = getWeekRange();
@@ -335,10 +311,7 @@
   }
 
   function renderHistory() {
-    if (!operations.length) {
-      historyListDiv.innerHTML = '<p style="text-align: center; color: gray;">Нет операций</p>';
-      return;
-    }
+    if (!operations.length) { historyListDiv.innerHTML = '<p style="text-align: center; color: gray;">Нет операций</p>'; return; }
     let html = '<table><thead><tr><th>Дата</th><th>Кто</th><th>Описание</th><th>Сумма</th><th></th></tr></thead><tbody>';
     operations.forEach(op => {
       const author = op.authorName || (op.authorEmail || '?');
@@ -352,27 +325,17 @@
     });
     html += '</tbody></table>';
     historyListDiv.innerHTML = html;
-    document.querySelectorAll('.delete-icon').forEach(btn => {
-      btn.addEventListener('click', () => deleteOperation(btn.getAttribute('data-id')));
-    });
+    document.querySelectorAll('.delete-icon').forEach(btn => btn.addEventListener('click', () => deleteOperation(btn.getAttribute('data-id'))));
   }
 
   function renderMeasurements() {
-    if (!measurements.length) {
-      measurementListDiv.innerHTML = '<p style="color: gray;">Нет записей веса/жира</p>';
-      return;
-    }
+    if (!measurements.length) { measurementListDiv.innerHTML = '<p style="color: gray;">Нет записей веса/жира</p>'; return; }
     let html = '';
     [...measurements].reverse().slice(0,6).forEach(m => {
-      html += `<div class="measurement-row flex-between">
-        <span><strong>${m.date}</strong> — ${m.weight} кг / ${m.fat}% жира</span>
-        <button class="btn-sm delete-meas" data-id="${m.id}" style="background:#fee2e2;">❌</button>
-      </div>`;
+      html += `<div class="measurement-row flex-between"><span><strong>${m.date}</strong> — ${m.weight} кг / ${m.fat}% жира</span><button class="btn-sm delete-meas" data-id="${m.id}" style="background:#fee2e2;">❌</button></div>`;
     });
     measurementListDiv.innerHTML = html;
-    document.querySelectorAll('.delete-meas').forEach(btn => {
-      btn.addEventListener('click', () => deleteMeasurement(btn.getAttribute('data-id')));
-    });
+    document.querySelectorAll('.delete-meas').forEach(btn => btn.addEventListener('click', () => deleteMeasurement(btn.getAttribute('data-id'))));
   }
 
   function renderQuickButtons() {
@@ -417,17 +380,14 @@
     callback();
   }
 
-  // Load data from Firebase
   function loadUserData() {
-    const opsRef = getUserOpsRef();
-    const measRef = getUserMeasRef();
-    onValue(opsRef, (snap) => {
+    onValue(getUserOpsRef(), (snap) => {
       const data = snap.val();
       operations = data ? Object.entries(data).map(([id, op]) => ({ id, ...op })) : [];
       operations.sort((a,b) => new Date(b.date) - new Date(a.date));
       renderAll();
     });
-    onValue(measRef, (snap) => {
+    onValue(getUserMeasRef(), (snap) => {
       const data = snap.val();
       measurements = data ? Object.entries(data).map(([id, m]) => ({ id, ...m })) : [];
       measurements.sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -438,62 +398,73 @@
 
   // Admin functions
   async function loadAdminUsers() {
-    const usersSnapshot = await get(ref(db, 'users'));
-    if (!usersSnapshot.exists()) return;
-    const users = usersSnapshot.val();
-    let html = '';
-    for (const [uid, userData] of Object.entries(users)) {
-      const profile = userData.profile || {};
-      const displayName = profile.displayName || '';
-      const email = profile.email || (await auth.getUser(uid)?.email) || uid;
-      const multipliersData = userData.settings?.multipliers || { reward: 1.0, penalty: 1.0 };
-      html += `
-        <div class="user-item">
-          <div class="flex-between">
-            <strong>${displayName || email}</strong>
-            <span class="badge">UID: ${uid.slice(0,8)}...</span>
+    try {
+      const usersSnapshot = await get(ref(db, 'users'));
+      if (!usersSnapshot.exists()) {
+        adminUsersListDiv.innerHTML = '<p>Нет зарегистрированных пользователей</p>';
+        return;
+      }
+      const users = usersSnapshot.val();
+      let html = '';
+      for (const [uid, userData] of Object.entries(users)) {
+        const profile = userData.profile || {};
+        const displayName = profile.displayName || '';
+        const email = profile.email || (await auth.getUser?.(uid)?.email) || uid;
+        const multipliersData = userData.settings?.multipliers || { reward: 1.0, penalty: 1.0 };
+        html += `
+          <div class="user-item">
+            <div class="flex-between">
+              <strong>${escapeHtml(displayName || email)}</strong>
+              <span style="font-size:0.7rem;">UID: ${uid.slice(0,8)}...</span>
+            </div>
+            <div class="inline-input" style="margin: 8px 0;">
+              <input type="text" id="name_${uid}" placeholder="Имя" value="${escapeHtml(displayName)}" style="flex:1">
+              <button class="btn-sm" onclick="window.updateUserName('${uid}', this.previousElementSibling.value)">Сохранить имя</button>
+            </div>
+            <div class="inline-input" style="gap: 8px;">
+              <label>Множитель поощрений:</label>
+              <input type="number" id="rewardMul_${uid}" step="0.1" value="${multipliersData.reward}" style="width: 80px;">
+              <label>Штрафов:</label>
+              <input type="number" id="penaltyMul_${uid}" step="0.1" value="${multipliersData.penalty}" style="width: 80px;">
+              <button class="btn-sm" onclick="window.updateMultipliers('${uid}', parseFloat(document.getElementById('rewardMul_${uid}').value), parseFloat(document.getElementById('penaltyMul_${uid}').value))">Обновить</button>
+            </div>
+            <button class="btn-sm" onclick="window.viewUserOperations('${uid}', '${escapeHtml(displayName || email)}')">📋 Показать операции</button>
+            <div id="ops_${uid}" style="margin-top: 8px; font-size: 0.8rem;"></div>
           </div>
-          <div class="inline-input" style="margin: 8px 0;">
-            <input type="text" id="name_${uid}" placeholder="Имя" value="${escapeHtml(displayName)}" style="flex:1">
-            <button class="btn-sm" onclick="updateUserName('${uid}', document.getElementById('name_${uid}').value)">Сохранить имя</button>
-          </div>
-          <div class="inline-input" style="gap: 8px;">
-            <label>Множитель поощрений:</label>
-            <input type="number" id="rewardMul_${uid}" step="0.1" value="${multipliersData.reward}" style="width: 80px;">
-            <label>Штрафов:</label>
-            <input type="number" id="penaltyMul_${uid}" step="0.1" value="${multipliersData.penalty}" style="width: 80px;">
-            <button class="btn-sm" onclick="updateMultipliers('${uid}', parseFloat(document.getElementById('rewardMul_${uid}').value), parseFloat(document.getElementById('penaltyMul_${uid}').value))">Обновить</button>
-          </div>
-          <button class="btn-sm" onclick="viewUserOperations('${uid}', '${displayName || email}')">📋 Показать операции</button>
-          <div id="ops_${uid}" style="margin-top: 8px; font-size: 0.8rem;"></div>
-        </div>
-      `;
+        `;
+      }
+      adminUsersListDiv.innerHTML = html;
+    } catch (error) {
+      console.error('Ошибка загрузки пользователей:', error);
+      adminUsersListDiv.innerHTML = '<p>Ошибка загрузки. Проверьте права доступа.</p>';
     }
-    adminUsersListDiv.innerHTML = html;
-    // Привязываем функции глобально
-    window.updateUserName = async (uid, newName) => {
-      await update(ref(db, `users/${uid}/profile`), { displayName: newName });
-      loadAdminUsers(); // обновить список
-    };
-    window.updateMultipliers = async (uid, rewardMul, penaltyMul) => {
-      if (isNaN(rewardMul) || isNaN(penaltyMul)) return;
-      await update(ref(db, `users/${uid}/settings`), { multipliers: { reward: rewardMul, penalty: penaltyMul } });
-      loadAdminUsers();
-    };
-    window.viewUserOperations = async (uid, userName) => {
-      const opsRef = ref(db, `users/${uid}/operations`);
-      const snap = await get(opsRef);
-      const ops = snap.val();
-      const opsDiv = document.getElementById(`ops_${uid}`);
-      if (!ops) { opsDiv.innerHTML = '<em>Нет операций</em>'; return; }
-      let html = '<table style="width:100%; font-size:0.75rem;"><tr><th>Дата</th><th>Описание</th><th>Сумма</th></tr>';
-      Object.values(ops).forEach(op => {
-        html += `<tr><td>${op.date}</td><td>${escapeHtml(op.description)}</td><td class="${op.sum>=0?'positive':'negative'}">${op.sum} ₽</td></tr>`;
-      });
-      html += '</table>';
-      opsDiv.innerHTML = html;
-    };
   }
+
+  window.updateUserName = async (uid, newName) => {
+    await update(ref(db, `users/${uid}/profile`), { displayName: newName });
+    loadAdminUsers();
+  };
+  window.updateMultipliers = async (uid, rewardMul, penaltyMul) => {
+    if (isNaN(rewardMul) || isNaN(penaltyMul)) return;
+    await update(ref(db, `users/${uid}/settings`), { multipliers: { reward: rewardMul, penalty: penaltyMul } });
+    loadAdminUsers();
+  };
+  window.viewUserOperations = async (uid, userName) => {
+    const opsRef = ref(db, `users/${uid}/operations`);
+    const snap = await get(opsRef);
+    const ops = snap.val();
+    const opsDiv = document.getElementById(`ops_${uid}`);
+    if (!ops || Object.keys(ops).length === 0) {
+      opsDiv.innerHTML = '<em>Нет операций</em>';
+      return;
+    }
+    let html = '<table style="width:100%; font-size:0.75rem;"><tr><th>Дата</th><th>Описание</th><th>Сумма</th></tr>';
+    Object.values(ops).forEach(op => {
+      html += `<tr><td>${op.date}</td><td>${escapeHtml(op.description)}</td><td class="${op.sum>=0?'positive':'negative'}">${op.sum} ₽</td></tr>`;
+    });
+    html += '</table>';
+    opsDiv.innerHTML = html;
+  };
 
   // Auth handlers
   function showAuthMessage(msg, isError=true) {
@@ -541,7 +512,6 @@
       currentUser = user;
       userEmailSpan.innerText = user.email;
       userDisplayNameSpan.innerText = user.displayName || user.email;
-      // Проверка админа: наличие uid в узле admins
       const adminCheck = await get(ref(db, `admins/${user.uid}`));
       isAdmin = adminCheck.exists() && adminCheck.val() === true;
       adminPanelBtn.style.display = isAdmin ? 'inline-block' : 'none';
