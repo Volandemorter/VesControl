@@ -5,258 +5,166 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Мотивация: поощрения и штрафы</title>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
-    body {
-      background: #f0f2f5;
-      margin: 0;
-      padding: 16px 12px 40px;
-    }
-    .container {
-      max-width: 700px;
-      margin: 0 auto;
-    }
-    .card {
-      background: white;
-      border-radius: 24px;
-      padding: 16px 18px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      transition: all 0.2s;
-    }
-    h1, h2, h3 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      font-weight: 600;
-      color: #1e293b;
-    }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background: #f0f2f5; margin: 0; padding: 16px 12px 40px; }
+    .container { max-width: 700px; margin: 0 auto; }
+    .card { background: white; border-radius: 24px; padding: 16px 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    h1, h2, h3 { margin-top: 0; margin-bottom: 12px; font-weight: 600; color: #1e293b; }
     h1 { font-size: 1.7rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
     h2 { font-size: 1.3rem; border-left: 4px solid #f97316; padding-left: 12px; }
     h3 { font-size: 1.1rem; margin-bottom: 8px; color: #334155; }
-    .balance {
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      color: white;
-      border-radius: 28px;
-      padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .btn-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .btn {
-      background: #f1f5f9;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 60px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: transform 0.08s linear, background 0.1s ease;
-      color: #0f172a;
-      user-select: none;
-    }
-    .btn:active {
-      transform: scale(0.96);
-    }
-    .btn-primary {
-      background: #f97316;
-      color: white;
-    }
+    .balance { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 28px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+    .btn-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .btn { background: #f1f5f9; border: none; padding: 10px 16px; border-radius: 60px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: transform 0.08s linear, background 0.1s ease; color: #0f172a; user-select: none; }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: #f97316; color: white; }
     .btn-primary:active { background: #ea580c; }
     .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     th, td { text-align: left; padding: 8px 4px; border-bottom: 1px solid #e2e8f0; }
     .delete-icon { color: #ef4444; cursor: pointer; background: none; border: none; font-size: 1.1rem; }
     .positive { color: #10b981; font-weight: 600; }
     .negative { color: #ef4444; font-weight: 600; }
-    .stats {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 16px 0;
-    }
-    .stat-card {
-      background: #f8fafc;
-      border-radius: 20px;
-      padding: 12px;
-      flex: 1;
-      text-align: center;
-    }
-    input, select {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 40px;
-      padding: 10px 14px;
-      font-size: 0.9rem;
-      width: 100%;
-    }
+    .stats { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+    .stat-card { background: #f8fafc; border-radius: 20px; padding: 12px; flex: 1; text-align: center; }
+    input, select { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 40px; padding: 10px 14px; font-size: 0.9rem; width: 100%; }
     .inline-input { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .history-scroll { max-height: 340px; overflow-y: auto; }
-    .measurement-row {
-      background: #fef9e6;
-      border-radius: 20px;
-      padding: 8px 12px;
-      margin-bottom: 8px;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: white;
-      max-width: 500px;
-      width: 90%;
-      border-radius: 32px;
-      padding: 20px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .rules-text p, .rules-text li {
-      font-size: 0.9rem;
-      line-height: 1.4;
-    }
-    .close-modal {
-      float: right;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-    @media (max-width: 550px) {
-      body { padding: 12px 8px; }
-      .btn { padding: 8px 12px; font-size: 0.8rem; }
-    }
+    .measurement-row { background: #fef9e6; border-radius: 20px; padding: 8px 12px; margin-bottom: 8px; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; max-width: 400px; width: 90%; border-radius: 32px; padding: 20px; }
+    .close-modal { float: right; font-size: 1.5rem; cursor: pointer; }
+    .auth-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+    @media (max-width: 550px) { body { padding: 12px 8px; } .btn { padding: 8px 12px; font-size: 0.8rem; } }
   </style>
+  <!-- Firebase SDK -->
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js",
+        "firebase/database": "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js"
+      }
+    }
+  </script>
 </head>
 <body>
-<div class="container">
-  <div class="balance card">
-    <span>💰 Общий баланс</span>
-    <span id="totalBalance">0 ₽</span>
-  </div>
-
-  <div class="card">
-    <div class="flex-between">
-      <h3>📅 Дата операции</h3>
-      <input type="date" id="selectedDate" style="width: auto; max-width: 160px;">
+<div class="container" id="appContainer">
+  <!-- Экран авторизации (показывается по умолчанию) -->
+  <div id="authScreen" class="card" style="text-align: center;">
+    <h2>🔐 Вход / Регистрация</h2>
+    <input type="email" id="emailInput" placeholder="Email" style="margin-bottom: 10px;">
+    <input type="password" id="passwordInput" placeholder="Пароль (мин. 6 символов)" style="margin-bottom: 10px;">
+    <div class="btn-grid" style="justify-content: center;">
+      <button id="loginBtn" class="btn btn-primary">Войти</button>
+      <button id="registerBtn" class="btn">Зарегистрироваться</button>
     </div>
-    <p style="margin: 8px 0 4px; font-size: 0.8rem;">По умолчанию сегодня. Все операции добавляются на эту дату.</p>
+    <p id="authMessage" style="color: red; font-size: 0.8rem;"></p>
   </div>
 
-  <!-- Кнопка вызова памятки -->
-  <div class="card" style="text-align: center;">
-    <button id="showRulesBtn" class="btn btn-primary" style="width: 100%;">📘 Памятка и правила системы</button>
-  </div>
-
-  <div class="card">
-    <h2>🏆 Быстрые поощрения</h2>
-    <div class="btn-grid" id="quickRewards"></div>
-    <h2 style="margin-top: 16px;">⚠️ Штрафы (срывы)</h2>
-    <div class="btn-grid" id="quickPenalties"></div>
-    <h2 style="margin-top: 16px;">📊 Достижения / Особые бонусы</h2>
-    <div class="btn-grid" id="quickAchievements"></div>
-  </div>
-
-  <div class="card">
-    <h2>➕ Добавить вручную</h2>
-    <div class="inline-input" style="margin-bottom: 12px;">
-      <select id="manualType" style="flex:1">
-        <option value="reward">Поощрение (+)</option>
-        <option value="penalty">Штраф (-)</option>
-      </select>
-      <input type="number" id="manualSum" placeholder="Сумма (₽)" step="1" value="100" style="flex:1">
+  <!-- Основной интерфейс (скрыт до входа) -->
+  <div id="mainUI" style="display: none;">
+    <div class="balance card">
+      <span>💰 Общий баланс</span>
+      <span id="totalBalance">0 ₽</span>
     </div>
-    <div class="inline-input">
-      <input type="text" id="manualDesc" placeholder="Описание" style="flex:2">
-      <button class="btn btn-primary" id="addManualBtn">➕ Добавить</button>
+    <div class="card auth-header">
+      <span>👤 <span id="userEmail"></span></span>
+      <button id="logoutBtn" class="btn btn-sm">Выйти</button>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>⚖️ Умные весы + прогресс тела</h2>
-    <div class="inline-input" style="margin-bottom: 8px;">
-      <input type="number" id="weightValue" step="0.1" placeholder="Вес (кг)" style="flex:1">
-      <input type="number" id="fatValue" step="0.1" placeholder="Жир (%)" style="flex:1">
-      <button class="btn btn-primary" id="addMeasurementBtn">📌 Записать</button>
+    <div class="card">
+      <div class="flex-between">
+        <h3>📅 Дата операции</h3>
+        <input type="date" id="selectedDate" style="width: auto; max-width: 160px;">
+      </div>
     </div>
-    <div id="measurementList"></div>
-    <p style="font-size: 0.7rem; color: #64748b;">*При снижении веса на 1 кг или жира на 1% автоматически начисляется бонус.</p>
-  </div>
-
-  <div class="card">
-    <h2>📈 Прогресс</h2>
-    <div class="stats">
-      <div class="stat-card"><strong>Сегодня</strong><br><span id="todayStat">0 ₽</span></div>
-      <div class="stat-card"><strong>Неделя</strong><br><span id="weekStat">0 ₽</span></div>
-      <div class="stat-card"><strong>Месяц</strong><br><span id="monthStat">0 ₽</span></div>
+    <div class="card">
+      <h2>🏆 Быстрые поощрения</h2>
+      <div class="btn-grid" id="quickRewards"></div>
+      <h2 style="margin-top: 16px;">⚠️ Штрафы (срывы)</h2>
+      <div class="btn-grid" id="quickPenalties"></div>
+      <h2 style="margin-top: 16px;">📊 Достижения / Особые бонусы</h2>
+      <div class="btn-grid" id="quickAchievements"></div>
     </div>
-    <div class="flex-between">
-      <span>📋 История операций</span>
-      <button id="clearHistoryBtn" class="btn btn-sm" style="color:#b91c1c;">🗑️ Очистить всё</button>
+    <div class="card">
+      <h2>➕ Добавить вручную</h2>
+      <div class="inline-input" style="margin-bottom: 12px;">
+        <select id="manualType" style="flex:1">
+          <option value="reward">Поощрение (+)</option>
+          <option value="penalty">Штраф (-)</option>
+        </select>
+        <input type="number" id="manualSum" placeholder="Сумма (₽)" step="1" value="100" style="flex:1">
+      </div>
+      <div class="inline-input">
+        <input type="text" id="manualDesc" placeholder="Описание" style="flex:2">
+        <button class="btn btn-primary" id="addManualBtn">➕ Добавить</button>
+      </div>
     </div>
-    <div class="history-scroll" id="historyList"></div>
-  </div>
-</div>
-
-<!-- Модальное окно памятки -->
-<div id="rulesModal" class="modal">
-  <div class="modal-content">
-    <span class="close-modal">&times;</span>
-    <h2>📘 Памятка и правила</h2>
-    <div class="rules-text">
-      <h3>🏆 Поощрения</h3>
-      <ul>
-        <li><strong>Тренировки:</strong> 10–20 мин → 50₽, 20–40 мин → 100₽, 40–60 мин → 150₽, >60 мин → 200₽</li>
-        <li><strong>Питание:</strong> Соблюдение калорийности (весь день) → 100₽, норма воды → 50₽</li>
-        <li><strong>Контроль:</strong> Взвешивание утром → 10₽, замер объёмов (раз в неделю) → 30₽</li>
-        <li><strong>Результаты (по умным весам):</strong> -1 кг → 1000₽, -1% жира → 200₽, сохранение мышц → 150₽/неделя</li>
-        <li><strong>Бонусы:</strong> Неделя без срывов → 300₽, промежуточная цель (ваша) → 1000₽</li>
-      </ul>
-      <h3>⚠️ Штрафы</h3>
-      <ul>
-        <li><strong>Газировка:</strong> до 0.25л → 150₽, больше → 500₽</li>
-        <li><strong>Сладости:</strong> малый кусок торта/пирожное → 150₽, большой → 500₽</li>
-        <li><strong>Конфеты/печенье:</strong> до 50г → 100₽, больше → 300₽</li>
-        <li><strong>Фастфуд:</strong> фри/наггетсы → 300₽, бургер/шаурма → 400₽</li>
-        <li><strong>Чипсы/сухарики → 200₽, булочка/круассан → 100₽</strong></li>
-        <li><strong>Пропуск тренировки без уважительной причины → 100₽</strong></li>
-      </ul>
-      <h3>📌 Автоматические бонусы</h3>
-      <p>При внесении новых измерений веса и % жира система сравнивает с предыдущим значением. Если зафиксировано снижение на 1 кг или 1% жира — автоматически добавляется соответствующий бонус (1000₽ за кг, 200₽ за % жира). Бонусы могут начисляться несколько раз, если потеряно несколько кг или % за один раз.</p>
-      <h3>💡 Советы</h3>
-      <p>• Старайтесь записывать операции сразу после события.<br>
-      • Используйте ручной ввод для нестандартных ситуаций.<br>
-      • Еженедельно обсуждайте прогресс — это усиливает мотивацию.<br>
-      • Баланс накапливается, можно тратить на приятные подарки или совместный досуг.</p>
-      <h3>🌐 Сохранение данных</h3>
-      <p>Все данные хранятся в вашем браузере (localStorage). При очистке кэша они могут исчезнуть. Для работы с нескольких устройств необходима серверная версия (например, с Firebase).</p>
+    <div class="card">
+      <h2>⚖️ Умные весы + прогресс тела</h2>
+      <div class="inline-input" style="margin-bottom: 8px;">
+        <input type="number" id="weightValue" step="0.1" placeholder="Вес (кг)" style="flex:1">
+        <input type="number" id="fatValue" step="0.1" placeholder="Жир (%)" style="flex:1">
+        <button class="btn btn-primary" id="addMeasurementBtn">📌 Записать</button>
+      </div>
+      <div id="measurementList"></div>
+      <p style="font-size: 0.7rem; color: #64748b;">*При снижении веса на 1 кг или жира на 1% автоматически начисляется бонус.</p>
+    </div>
+    <div class="card">
+      <h2>📈 Прогресс</h2>
+      <div class="stats">
+        <div class="stat-card"><strong>Сегодня</strong><br><span id="todayStat">0 ₽</span></div>
+        <div class="stat-card"><strong>Неделя</strong><br><span id="weekStat">0 ₽</span></div>
+        <div class="stat-card"><strong>Месяц</strong><br><span id="monthStat">0 ₽</span></div>
+      </div>
+      <div class="flex-between">
+        <span>📋 История операций</span>
+        <button id="clearHistoryBtn" class="btn btn-sm" style="color:#b91c1c;">🗑️ Очистить всё</button>
+      </div>
+      <div class="history-scroll" id="historyList"></div>
     </div>
   </div>
 </div>
 
-<script>
-  // ---------- БАЗОВЫЕ ДАННЫЕ ----------
+<script type="module">
+  import { initializeApp } from "firebase/app";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
+  import { getDatabase, ref, set, push, onValue, remove, query, orderByChild } from "firebase/database";
+
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCxe_7m2BcFsPY22Uz-SqJGDBKcJyUW93g",
+    authDomain: "vescontrol-bbd1e.firebaseapp.com",
+    projectId: "vescontrol-bbd1e",
+    storageBucket: "vescontrol-bbd1e.firebasestorage.app",
+    messagingSenderId: "1019506115928",
+    appId: "1:1019506115928:web:217d024cff22942d18912d",
+    measurementId: "G-64TH3N6EJS",
+    databaseURL: "https://vescontrol-bbd1e-default-rtdb.europe-west1.firebasedatabase.app"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  // DOM elements
+  const authScreen = document.getElementById('authScreen');
+  const mainUI = document.getElementById('mainUI');
+  const userEmailSpan = document.getElementById('userEmail');
+  const totalBalanceSpan = document.getElementById('totalBalance');
+  const todayStatSpan = document.getElementById('todayStat');
+  const weekStatSpan = document.getElementById('weekStat');
+  const monthStatSpan = document.getElementById('monthStat');
+  const historyListDiv = document.getElementById('historyList');
+  const measurementListDiv = document.getElementById('measurementList');
+  const selectedDateInput = document.getElementById('selectedDate');
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  const addManualBtn = document.getElementById('addManualBtn');
+  const addMeasurementBtn = document.getElementById('addMeasurementBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  // Lists for buttons
   const REWARDS = [
     { label: "🏋️ Тренировка 10-20мин", sum: 50 },
     { label: "🏋️‍♀️ Тренировка 20-40мин", sum: 100 },
@@ -267,7 +175,6 @@
     { label: "⚖️ Взвешивание утром", sum: 10 },
     { label: "📏 Замер объёмов (неделя)", sum: 30 }
   ];
-
   const PENALTIES = [
     { label: "🥤 Газировка до 0.25л", sum: 150 },
     { label: "🥤 Газировка >0.25л", sum: 500 },
@@ -280,7 +187,6 @@
     { label: "🥨 Чипсы/сухарики", sum: 200 },
     { label: "🥖 Булочка/круассан", sum: 100 }
   ];
-
   const ACHIEVEMENTS = [
     { label: "🏅 Похудела на 1 кг", sum: 1000 },
     { label: "🔥 Убрала 1% жира", sum: 200 },
@@ -289,95 +195,110 @@
     { label: "🎯 Промежуточная цель (бонус)", sum: 1000 }
   ];
 
-  const STORAGE_OPERATIONS = "motivation_operations";
-  const STORAGE_MEASUREMENTS = "motivation_measurements";
-
+  let currentUser = null;
   let operations = [];
   let measurements = [];
 
+  // Helper functions
+  function getTodayStr() {
+    return new Date().toISOString().slice(0,10);
+  }
+  function formatMoney(sum) {
+    const color = sum >=0 ? 'positive' : 'negative';
+    return `<span class="${color}">${sum > 0 ? '+' : ''}${sum.toLocaleString()} ₽</span>`;
+  }
+
+  // Database references
+  function getUserOpsRef() { return ref(db, `users/${currentUser.uid}/operations`); }
+  function getUserMeasRef() { return ref(db, `users/${currentUser.uid}/measurements`); }
+
+  // Load data from Firebase and set listeners
   function loadData() {
-    const storedOps = localStorage.getItem(STORAGE_OPERATIONS);
-    if (storedOps) operations = JSON.parse(storedOps);
-    const storedMeas = localStorage.getItem(STORAGE_MEASUREMENTS);
-    if (storedMeas) measurements = JSON.parse(storedMeas);
-    operations.sort((a,b) => new Date(b.date) - new Date(a.date));
-    measurements.sort((a,b) => new Date(a.date) - new Date(b.date));
+    const opsRef = getUserOpsRef();
+    const measRef = getUserMeasRef();
+    onValue(opsRef, (snapshot) => {
+      const data = snapshot.val();
+      operations = data ? Object.entries(data).map(([id, op]) => ({ id, ...op })) : [];
+      operations.sort((a,b) => new Date(b.date) - new Date(a.date));
+      renderAll();
+    });
+    onValue(measRef, (snapshot) => {
+      const data = snapshot.val();
+      measurements = data ? Object.entries(data).map(([id, m]) => ({ id, ...m })) : [];
+      measurements.sort((a,b) => new Date(a.date) - new Date(b.date));
+      renderMeasurements();
+      // Автобонусы при добавлении нового измерения обрабатываются отдельно в addMeasurement,
+      // но для синхронизации с других устройств тоже нужно проверять. Проще: при добавлении вручную проверяем.
+    });
   }
 
-  function saveOperations() { localStorage.setItem(STORAGE_OPERATIONS, JSON.stringify(operations)); }
-  function saveMeasurements() { localStorage.setItem(STORAGE_MEASUREMENTS, JSON.stringify(measurements)); }
-
-  function animateAndDisable(button, callback) {
-    if (!button || button.disabled) return;
-    button.disabled = true;
-    button.style.transform = "scale(0.96)";
-    if (navigator.vibrate) navigator.vibrate(20);
-    setTimeout(() => {
-      button.disabled = false;
-      button.style.transform = "";
-    }, 200);
-    if (callback) callback();
-  }
-
-  function addOperation(date, type, sum, description) {
-    if (!date) date = new Date().toISOString().slice(0,10);
-    if (isNaN(sum) || sum <= 0) return false;
+  // Add operation
+  async function addOperation(date, type, sum, description) {
+    if (!currentUser) return;
+    const opsRef = getUserOpsRef();
     const newOp = {
-      id: Date.now() + Math.random(),
-      date,
+      date: date || getTodayStr(),
       type,
       sum: type === 'reward' ? Math.abs(sum) : -Math.abs(sum),
-      description: description.trim() || (type === 'reward' ? 'Поощрение' : 'Штраф')
+      description: description.trim() || (type === 'reward' ? 'Поощрение' : 'Штраф'),
+      timestamp: Date.now()
     };
-    operations.unshift(newOp);
-    saveOperations();
-    renderAll();
-    return true;
+    await push(opsRef, newOp);
   }
 
-  function deleteOperation(id) {
-    operations = operations.filter(op => op.id != id);
-    saveOperations();
-    renderAll();
+  async function deleteOperation(id) {
+    if (!currentUser) return;
+    const opRef = ref(db, `users/${currentUser.uid}/operations/${id}`);
+    await remove(opRef);
   }
 
-  function addMeasurement(date, weight, fat) {
-    if (!date) date = new Date().toISOString().slice(0,10);
-    if (isNaN(weight) || isNaN(fat)) return false;
-    let lastMeasurement = null;
-    if (measurements.length) {
-      const sorted = [...measurements].sort((a,b)=> new Date(a.date) - new Date(b.date));
-      lastMeasurement = sorted[sorted.length-1];
-    }
-    const newMeas = { id: Date.now() + Math.random(), date, weight: parseFloat(weight), fat: parseFloat(fat) };
-    measurements.push(newMeas);
-    saveMeasurements();
-
-    if (lastMeasurement) {
-      const weightDiff = lastMeasurement.weight - newMeas.weight;
-      const fatDiff = lastMeasurement.fat - newMeas.fat;
+  async function addMeasurement(date, weight, fat) {
+    if (!currentUser) return;
+    date = date || getTodayStr();
+    // Проверим предыдущее измерение для бонусов
+    const sorted = [...measurements].sort((a,b) => new Date(a.date) - new Date(b.date));
+    const last = sorted[sorted.length-1];
+    const measRef = getUserMeasRef();
+    const newMeas = { date, weight: parseFloat(weight), fat: parseFloat(fat), timestamp: Date.now() };
+    await push(measRef, newMeas);
+    // Автобонусы (если изменилось) — добавим после сохранения, чтобы обновить данные
+    if (last) {
+      const weightDiff = last.weight - newMeas.weight;
+      const fatDiff = last.fat - newMeas.fat;
       if (weightDiff >= 1.0) {
         const kgLost = Math.floor(weightDiff);
-        for(let i=0; i<kgLost; i++) addOperation(date, 'reward', 1000, `🎉 Автобонус: -1 кг (${lastMeasurement.weight} → ${newMeas.weight})`);
+        for(let i=0; i<kgLost; i++) {
+          await addOperation(date, 'reward', 1000, `🎉 Автобонус: -1 кг (${last.weight} → ${newMeas.weight})`);
+        }
       }
       if (fatDiff >= 1.0) {
         const fatLost = Math.floor(fatDiff);
-        for(let i=0; i<fatLost; i++) addOperation(date, 'reward', 200, `🔥 Автобонус: -1% жира (${lastMeasurement.fat}% → ${newMeas.fat}%)`);
+        for(let i=0; i<fatLost; i++) {
+          await addOperation(date, 'reward', 200, `🔥 Автобонус: -1% жира (${last.fat}% → ${newMeas.fat}%)`);
+        }
       }
     }
-    renderAll();
-    return true;
   }
 
-  function deleteMeasurement(id) {
-    measurements = measurements.filter(m => m.id != id);
-    saveMeasurements();
-    renderAll();
+  async function deleteMeasurement(id) {
+    if (!currentUser) return;
+    const measRef = ref(db, `users/${currentUser.uid}/measurements/${id}`);
+    await remove(measRef);
   }
 
-  function getBalanceTotal() { return operations.reduce((acc, op) => acc + op.sum, 0); }
-  function getSumByPeriod(dateStart, dateEnd) { return operations.reduce((acc, op) => (op.date >= dateStart && op.date <= dateEnd) ? acc + op.sum : acc, 0); }
-  function getTodayStr() { return new Date().toISOString().slice(0,10); }
+  async function clearAllOperations() {
+    if (!currentUser) return;
+    const opsRef = getUserOpsRef();
+    await set(opsRef, null);
+  }
+
+  // Calculate totals
+  function getBalanceTotal() {
+    return operations.reduce((acc, op) => acc + op.sum, 0);
+  }
+  function getSumByPeriod(dateStart, dateEnd) {
+    return operations.reduce((acc, op) => (op.date >= dateStart && op.date <= dateEnd) ? acc + op.sum : acc, 0);
+  }
   function getWeekRange() {
     const today = new Date();
     const start = new Date(today);
@@ -393,121 +314,178 @@
     return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
   }
 
+  // Render UI
   function renderAll() {
-    document.getElementById('totalBalance').innerText = getBalanceTotal().toLocaleString() + ' ₽';
+    if (!currentUser) return;
+    totalBalanceSpan.innerText = getBalanceTotal().toLocaleString() + ' ₽';
     const todaySum = getSumByPeriod(getTodayStr(), getTodayStr());
     const week = getWeekRange();
     const month = getMonthRange();
-    document.getElementById('todayStat').innerHTML = formatMoney(todaySum);
-    document.getElementById('weekStat').innerHTML = formatMoney(getSumByPeriod(week.start, week.end));
-    document.getElementById('monthStat').innerHTML = formatMoney(getSumByPeriod(month.start, month.end));
+    todayStatSpan.innerHTML = formatMoney(todaySum);
+    weekStatSpan.innerHTML = formatMoney(getSumByPeriod(week.start, week.end));
+    monthStatSpan.innerHTML = formatMoney(getSumByPeriod(month.start, month.end));
     renderHistory();
-    renderMeasurements();
     renderQuickButtons();
+    renderMeasurements();
   }
 
-  function formatMoney(sum) { const color = sum >=0 ? 'positive' : 'negative'; return `<span class="${color}">${sum > 0 ? '+' : ''}${sum.toLocaleString()} ₽</span>`; }
-  function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ return m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'; }); }
-
   function renderHistory() {
-    const div = document.getElementById('historyList');
-    if (!operations.length) { div.innerHTML = '<p style="text-align: center; color: gray;">Нет операций</p>'; return; }
+    if (!operations.length) {
+      historyListDiv.innerHTML = '<p style="text-align: center; color: gray;">Нет операций</p>';
+      return;
+    }
     let html = '<table><thead><tr><th>Дата</th><th>Описание</th><th>Сумма</th><th></th></tr></thead><tbody>';
     operations.forEach(op => {
-      html += `<tr><td>${op.date.slice(5)}</td><td>${escapeHtml(op.description)}</td><td class="${op.sum>=0?'positive':'negative'}">${op.sum>=0?'+':''}${op.sum} ₽</td><td><button class="delete-icon" data-id="${op.id}">🗑️</button></td></tr>`;
+      html += `<tr>
+        <td>${op.date.slice(5)}</td>
+        <td>${escapeHtml(op.description)}</td>
+        <td class="${op.sum>=0?'positive':'negative'}">${op.sum>=0?'+':''}${op.sum} ₽</td>
+        <td><button class="delete-icon" data-id="${op.id}">🗑️</button></td>
+      </tr>`;
     });
     html += '</tbody></table>';
-    div.innerHTML = html;
-    document.querySelectorAll('.delete-icon').forEach(btn => btn.addEventListener('click', (e) => { deleteOperation(parseFloat(btn.getAttribute('data-id'))); }));
+    historyListDiv.innerHTML = html;
+    document.querySelectorAll('.delete-icon').forEach(btn => {
+      btn.addEventListener('click', (e) => deleteOperation(btn.getAttribute('data-id')));
+    });
   }
 
   function renderMeasurements() {
-    const div = document.getElementById('measurementList');
-    if (!measurements.length) { div.innerHTML = '<p style="color: gray;">Нет записей веса/жира</p>'; return; }
+    if (!measurements.length) {
+      measurementListDiv.innerHTML = '<p style="color: gray;">Нет записей веса/жира</p>';
+      return;
+    }
     let html = '';
     [...measurements].reverse().slice(0,6).forEach(m => {
-      html += `<div class="measurement-row flex-between"><span><strong>${m.date}</strong> — ${m.weight} кг / ${m.fat}% жира</span><button class="btn-sm delete-meas" data-id="${m.id}" style="background:#fee2e2;">❌</button></div>`;
+      html += `<div class="measurement-row flex-between">
+        <span><strong>${m.date}</strong> — ${m.weight} кг / ${m.fat}% жира</span>
+        <button class="btn-sm delete-meas" data-id="${m.id}" style="background:#fee2e2;">❌</button>
+      </div>`;
     });
-    div.innerHTML = html;
-    document.querySelectorAll('.delete-meas').forEach(btn => btn.addEventListener('click', (e) => deleteMeasurement(parseFloat(btn.getAttribute('data-id')))));
+    measurementListDiv.innerHTML = html;
+    document.querySelectorAll('.delete-meas').forEach(btn => {
+      btn.addEventListener('click', (e) => deleteMeasurement(btn.getAttribute('data-id')));
+    });
   }
 
   function renderQuickButtons() {
-    const rewardContainer = document.getElementById('quickRewards');
-    const penaltyContainer = document.getElementById('quickPenalties');
-    const achievContainer = document.getElementById('quickAchievements');
-    rewardContainer.innerHTML = '';
+    const rewardDiv = document.getElementById('quickRewards');
+    const penaltyDiv = document.getElementById('quickPenalties');
+    const achievDiv = document.getElementById('quickAchievements');
+    rewardDiv.innerHTML = '';
     REWARDS.forEach(r => {
       const btn = document.createElement('button');
       btn.className = 'btn';
       btn.innerText = `${r.label} +${r.sum}₽`;
-      btn.onclick = () => animateAndDisable(btn, () => addOperation(document.getElementById('selectedDate').value || getTodayStr(), 'reward', r.sum, r.label));
-      rewardContainer.appendChild(btn);
+      btn.onclick = () => animateAndDisable(btn, () => addOperation(selectedDateInput.value || getTodayStr(), 'reward', r.sum, r.label));
+      rewardDiv.appendChild(btn);
     });
-    penaltyContainer.innerHTML = '';
+    penaltyDiv.innerHTML = '';
     PENALTIES.forEach(p => {
       const btn = document.createElement('button');
       btn.className = 'btn';
       btn.innerText = `${p.label} -${p.sum}₽`;
-      btn.onclick = () => animateAndDisable(btn, () => addOperation(document.getElementById('selectedDate').value || getTodayStr(), 'penalty', p.sum, p.label));
-      penaltyContainer.appendChild(btn);
+      btn.onclick = () => animateAndDisable(btn, () => addOperation(selectedDateInput.value || getTodayStr(), 'penalty', p.sum, p.label));
+      penaltyDiv.appendChild(btn);
     });
-    achievContainer.innerHTML = '';
+    achievDiv.innerHTML = '';
     ACHIEVEMENTS.forEach(a => {
       const btn = document.createElement('button');
       btn.className = 'btn btn-primary';
       btn.innerText = `${a.label} +${a.sum}₽`;
-      btn.onclick = () => animateAndDisable(btn, () => addOperation(document.getElementById('selectedDate').value || getTodayStr(), 'reward', a.sum, a.label));
-      achievContainer.appendChild(btn);
+      btn.onclick = () => animateAndDisable(btn, () => addOperation(selectedDateInput.value || getTodayStr(), 'reward', a.sum, a.label));
+      achievDiv.appendChild(btn);
     });
   }
 
-  // Модальное окно
-  const modal = document.getElementById('rulesModal');
-  const showBtn = document.getElementById('showRulesBtn');
-  const closeSpan = document.querySelector('.close-modal');
-  showBtn.onclick = () => { modal.style.display = 'flex'; };
-  closeSpan.onclick = () => { modal.style.display = 'none'; };
-  window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; };
+  function animateAndDisable(btn, callback) {
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    btn.style.transform = "scale(0.96)";
+    if (navigator.vibrate) navigator.vibrate(20);
+    setTimeout(() => { btn.disabled = false; btn.style.transform = ""; }, 200);
+    callback();
+  }
 
-  // Инициализация и обработчики
-  document.getElementById('selectedDate').value = getTodayStr();
-  document.getElementById('addManualBtn').onclick = () => {
-    const btn = document.getElementById('addManualBtn');
-    animateAndDisable(btn, () => {
-      const type = document.getElementById('manualType').value;
-      let sum = parseFloat(document.getElementById('manualSum').value);
-      let desc = document.getElementById('manualDesc').value;
-      if (isNaN(sum) || sum <= 0) { alert('Введите сумму >0'); return; }
-      if (!desc) desc = type === 'reward' ? 'Ручное поощрение' : 'Ручной штраф';
-      addOperation(document.getElementById('selectedDate').value || getTodayStr(), type, sum, desc);
-      document.getElementById('manualSum').value = 100;
-      document.getElementById('manualDesc').value = '';
+  function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+      return m==='&'?'&amp;':m==='<'?'&lt;':'&gt;';
     });
+  }
+
+  // Auth handlers
+  function showAuthMessage(msg, isError=true) {
+    const msgDiv = document.getElementById('authMessage');
+    msgDiv.innerText = msg;
+    msgDiv.style.color = isError ? 'red' : 'green';
+    setTimeout(() => msgDiv.innerText = '', 3000);
+  }
+
+  document.getElementById('loginBtn').onclick = async () => {
+    const email = document.getElementById('emailInput').value;
+    const password = document.getElementById('passwordInput').value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showAuthMessage('Вход выполнен!', false);
+    } catch (err) {
+      showAuthMessage(err.message);
+    }
   };
-  document.getElementById('addMeasurementBtn').onclick = () => {
-    const btn = document.getElementById('addMeasurementBtn');
-    animateAndDisable(btn, () => {
-      const weight = parseFloat(document.getElementById('weightValue').value);
-      const fat = parseFloat(document.getElementById('fatValue').value);
-      if (isNaN(weight) || isNaN(fat)) { alert('Введите вес и % жира'); return; }
-      addMeasurement(document.getElementById('selectedDate').value || getTodayStr(), weight, fat);
-      document.getElementById('weightValue').value = '';
-      document.getElementById('fatValue').value = '';
-    });
+  document.getElementById('registerBtn').onclick = async () => {
+    const email = document.getElementById('emailInput').value;
+    const password = document.getElementById('passwordInput').value;
+    if (password.length < 6) {
+      showAuthMessage('Пароль должен быть не менее 6 символов');
+      return;
+    }
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      showAuthMessage('Регистрация успешна!', false);
+    } catch (err) {
+      showAuthMessage(err.message);
+    }
   };
-  document.getElementById('clearHistoryBtn').onclick = () => {
-    const btn = document.getElementById('clearHistoryBtn');
-    animateAndDisable(btn, () => {
-      if (confirm('Удалить ВСЕ операции? Измерения останутся.')) {
-        operations = [];
-        saveOperations();
-        renderAll();
-      }
-    });
+  logoutBtn.onclick = async () => {
+    await signOut(auth);
   };
-  loadData();
-  renderAll();
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      userEmailSpan.innerText = user.email;
+      authScreen.style.display = 'none';
+      mainUI.style.display = 'block';
+      selectedDateInput.value = getTodayStr();
+      loadData();
+    } else {
+      currentUser = null;
+      authScreen.style.display = 'block';
+      mainUI.style.display = 'none';
+      operations = [];
+      measurements = [];
+    }
+  });
+
+  // Manual add
+  addManualBtn.onclick = () => {
+    const type = document.getElementById('manualType').value;
+    const sum = parseFloat(document.getElementById('manualSum').value);
+    const desc = document.getElementById('manualDesc').value;
+    if (isNaN(sum) || sum <= 0) { alert('Введите сумму >0'); return; }
+    addOperation(selectedDateInput.value || getTodayStr(), type, sum, desc);
+    document.getElementById('manualDesc').value = '';
+  };
+  addMeasurementBtn.onclick = () => {
+    const weight = parseFloat(document.getElementById('weightValue').value);
+    const fat = parseFloat(document.getElementById('fatValue').value);
+    if (isNaN(weight) || isNaN(fat)) { alert('Введите вес и % жира'); return; }
+    addMeasurement(selectedDateInput.value || getTodayStr(), weight, fat);
+    document.getElementById('weightValue').value = '';
+    document.getElementById('fatValue').value = '';
+  };
+  clearHistoryBtn.onclick = () => {
+    if (confirm('Удалить ВСЕ операции? Измерения останутся.')) clearAllOperations();
+  };
 </script>
 </body>
 </html>
